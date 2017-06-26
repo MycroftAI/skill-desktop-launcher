@@ -3,3 +3,4 @@
 ## Usage:
 * `open firefox`
 * `search mycroft in amazon`
+* `close firefox`
