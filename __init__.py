@@ -74,7 +74,7 @@ class DesktopLauncherSkill(MycroftSkill):
             "LaunchDesktopApplicationIntent").require("LaunchKeyword").require(
             "Application").build()
         self.register_intent(launch_intent, self.handle_launch_desktop_app)
-        
+
         close_intent = IntentBuilder(
             "CloseDesktopApplicationIntent").require("CloseKeyword").require(
             "Application").build()
@@ -95,10 +95,10 @@ class DesktopLauncherSkill(MycroftSkill):
         apps = self.appmap.get(app_name)
         if apps and len(apps) > 0:
             apps[0].launch()
-            
+
     def handle_close_desktop_app(self, message):
         app_name = message.data.get('Application')
-	    subprocess.call( [ "killall", "-9", app_name ] )
+        subprocess.call( [ "killall", "-9", app_name ] )
 
     def handle_launch_website(self, message):
         site = message.data.get("Website")
