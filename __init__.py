@@ -17,7 +17,6 @@
 
 
 import sys
-import urllib2
 import webbrowser
 import subprocess
 
@@ -27,6 +26,16 @@ from os.path import dirname, join
 
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
+if sys.version_info[0] < 3:
+    from urllib import quote
+    try:
+        import gio
+    except ModuleNotFoundError:
+        sys.path.append("/usr/lib/python2.7/dist-packages")
+        import gio
+else:
+    from urllib.parse import quote
+    from gi.repository import Gio as gio
 
 logger = getLogger(__name__)
 __author__ = 'seanfitz'
@@ -40,16 +49,6 @@ class DesktopLauncherSkill(MycroftSkill):
         self.appmap = {}
 
     def initialize(self):
-        try:
-            import gio
-        except:
-            sys.path.append("/usr/lib/python2.7/dist-packages")
-            try:
-                import gio
-            except:
-                logger.error("Could not import gio")
-                return
-
         tokenizer = EnglishTokenizer()
 
         for app in gio.app_info_get_all():
@@ -102,13 +101,13 @@ class DesktopLauncherSkill(MycroftSkill):
 
     def handle_launch_website(self, message):
         site = message.data.get("Website")
-        webbrowser.open(IFL_TEMPLATE % (urllib2.quote(site)))
+        webbrowser.open(IFL_TEMPLATE % (quote(site)))
 
     def handle_search_website(self, message):
         site = message.data.get("Website")
         search_terms = message.data.get("SearchTerms")
         search_str = site + " " + search_terms
-        webbrowser.open(IFL_TEMPLATE % (urllib2.quote(search_str)))
+        webbrowser.open(IFL_TEMPLATE % (quote(search_str)))
 
     def stop(self):
         pass
