@@ -13,7 +13,6 @@
 # limitations under the License.
 
 
-import sys
 import webbrowser
 import subprocess
 
@@ -23,16 +22,8 @@ from os.path import dirname, join
 
 from mycroft.skills.core import MycroftSkill
 from mycroft.util.log import getLogger
-if sys.version_info[0] < 3:
-    from urllib import quote
-    try:
-        import gio
-    except ModuleNotFoundError:
-        sys.path.append("/usr/lib/python2.7/dist-packages")
-        import gio
-else:
-    from urllib.parse import quote
-    from gi.repository import Gio as gio
+from urllib.parse import quote
+from gi.repository import Gio as gio
 
 logger = getLogger(__name__)
 __author__ = 'seanfitz'
