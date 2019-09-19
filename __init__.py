@@ -41,6 +41,9 @@ class DesktopLauncherSkill(MycroftSkill):
 
         for app in gio.app_info_get_all():
             name = app.get_name().lower()
+            if name == None:
+                # Likely an empty .desktop entry, skip it
+                continue
             entry = [app]
             tokenized_name = tokenizer.tokenize(name)[0]
 
