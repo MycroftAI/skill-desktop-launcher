@@ -11,29 +11,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
 import webbrowser
 import subprocess
 
 from adapt.intent import IntentBuilder
 from adapt.tools.text.tokenizer import EnglishTokenizer
-from os.path import dirname, join
 
-from mycroft.skills.core import MycroftSkill
-from mycroft.util.log import getLogger
+from mycroft import MycroftSkill, intent_handler
 from urllib.parse import quote
 from gi.repository import Gio as gio
 
-logger = getLogger(__name__)
-__author__ = 'seanfitz'
-
-IFL_TEMPLATE = "http://www.google.com/search?&sourceid=navclient&btnI=I&q=%s"
+IFL_TEMPLATE = 'http://www.google.com/search?&sourceid=navclient&btnI=I&q=%s'
 
 
 class DesktopLauncherSkill(MycroftSkill):
     def __init__(self):
-        MycroftSkill.__init__(self, "DesktopLauncherSkill")
+        super().__init__()
         self.appmap = {}
 
     def initialize(self):
@@ -41,7 +34,7 @@ class DesktopLauncherSkill(MycroftSkill):
 
         for app in gio.app_info_get_all():
             name = app.get_name().lower()
-            if name == None:
+            if name is None:
                 # Likely an empty .desktop entry, skip it
                 continue
             entry = [app]
@@ -52,56 +45,48 @@ class DesktopLauncherSkill(MycroftSkill):
             else:
                 self.appmap[name] = entry
 
-            self.register_vocabulary(name, "Application")
+            self.register_vocabulary(name, 'Application')
             if name != tokenized_name:
-                self.register_vocabulary(tokenized_name, "Application")
+                self.register_vocabulary(tokenized_name, 'Application')
                 if tokenized_name in self.appmap:
                     self.appmap[tokenized_name] += entry
                 else:
                     self.appmap[tokenized_name] = entry
 
-        launch_intent = IntentBuilder(
-            "LaunchDesktopApplicationIntent").require("LaunchKeyword").require(
-            "Application").build()
-        self.register_intent(launch_intent, self.handle_launch_desktop_app)
-
-        close_intent = IntentBuilder(
-            "CloseDesktopApplicationIntent").require("CloseKeyword").require(
-            "Application").build()
-        self.register_intent(close_intent, self.handle_close_desktop_app)
-
-        launch_website_intent = IntentBuilder(
-            "LaunchWebsiteIntent").require("LaunchKeyword").require(
-            "Website").build()
-        self.register_intent(launch_website_intent, self.handle_launch_website)
-
-        search_website = IntentBuilder("SearchWebsiteIntent").require(
-            "SearchKeyword").require("Website").require(
-            "SearchTerms").build()
-        self.register_intent(search_website, self.handle_search_website)
-
+    @intent_handler(IntentBuilder('LaunchDesktopApplicationIntent')
+                    .require('LaunchKeyword')
+                    .require('Application'))
     def handle_launch_desktop_app(self, message):
+        """Launch a dektop application using Desktop file."""
         app_name = message.data.get('Application')
         apps = self.appmap.get(app_name)
         if apps and len(apps) > 0:
+            self.log.info('Launching {}'.format(app_name))
             apps[0].launch()
 
+    @intent_handler(IntentBuilder('CloseDesktopApplicationIntent')
+                    .require('CloseKeyword').require('Application'))
     def handle_close_desktop_app(self, message):
+        """Close application using killall -9."""
         app_name = message.data.get('Application')
-        subprocess.call( [ "killall", "-9", app_name ] )
+        subprocess.call(['killall', '-9', app_name])
 
+    @intent_handler(IntentBuilder('LaunchWebsiteIntent')
+                    .require('LaunchKeyword').require('Website'))
     def handle_launch_website(self, message):
+        """Open a website in the selected webbrowser."""
         site = message.data.get("Website")
         webbrowser.open(IFL_TEMPLATE % (quote(site)))
 
+    @intent_handler(IntentBuilder('SearchWebsiteIntent')
+                    .require('SearchKeyword').require('Website')
+                    .require('SearchTerms'))
     def handle_search_website(self, message):
-        site = message.data.get("Website")
-        search_terms = message.data.get("SearchTerms")
-        search_str = site + " " + search_terms
+        """Open a webbrowser searching for query."""
+        site = message.data.get('Website')
+        search_terms = message.data.get('SearchTerms')
+        search_str = '{} {}'.format(site, search_terms)
         webbrowser.open(IFL_TEMPLATE % (quote(search_str)))
-
-    def stop(self):
-        pass
 
 
 def create_skill():
