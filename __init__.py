@@ -69,7 +69,15 @@ class DesktopLauncherSkill(MycroftSkill):
     def handle_close_desktop_app(self, message):
         """Close application using killall -9."""
         app_name = message.data.get('Application')
-        subprocess.call(['killall', '-9', app_name])
+
+        self.log.info('Killing {}'.format(app_name))
+        if subprocess.call(['killall', '-9', app_name]):
+            # Couldn't be killed try to get executable from desktop file
+            apps = self.appmap.get(app_name)
+            # Try to find executable name
+            if apps:
+                app_name = apps[0].get_string('Exec')
+                subprocess.call(['killall', '-9', app_name])
 
     @intent_handler(IntentBuilder('LaunchWebsiteIntent')
                     .require('LaunchKeyword').require('Website'))
