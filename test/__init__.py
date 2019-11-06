@@ -19,4 +19,16 @@ def test_runner(skill, example, emitter, loader, m1):
         elif example.endswith('search.for.kittens.json'):
             m.assert_called_with(SEARCH_BASE.format('youtube%20for%20kittens'))
 
+    if example.endswith('launch.rocket.json'):
+        s.register_vocabulary('rocket', 'Application')
+        m = mock.Mock()
+        s.appmap['rocket'] = [m]
+        ret = SkillTest(skill, example, emitter).run(loader)
+        m.launch.assert_called_with()
+    elif example.endswith('open.notepad.json'):
+        s.register_vocabulary('notepad', 'Application')
+        m = mock.Mock()
+        s.appmap['notepad'] = [m]
+        ret = SkillTest(skill, example, emitter).run(loader)
+        m.launch.assert_called_with()
     return ret

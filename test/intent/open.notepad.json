@@ -1,0 +1,8 @@
+{
+  "utterance": "open notepad",
+  "intent_type": "LaunchDesktopApplicationIntent",
+  "intent": {
+    "LaunchKeyword": "open",
+    "Application": "notepad"
+  }
+}

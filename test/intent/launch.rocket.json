@@ -1,0 +1,9 @@
+{
+  "utterance": "launch rocket",
+  "intent_type": "LaunchDesktopApplicationIntent",
+  "intent": {
+    "LaunchKeyword": "launch",
+    "Application": "rocket"
+  }
+}
+
