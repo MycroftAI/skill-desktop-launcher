@@ -67,17 +67,30 @@ class DesktopLauncherSkill(MycroftSkill):
     @intent_handler(IntentBuilder('CloseDesktopApplicationIntent')
                     .require('CloseKeyword').require('Application'))
     def handle_close_desktop_app(self, message):
-        """Close application using killall -9."""
-        app_name = message.data.get('Application')
+        """Close application using killall"""
+        app_name = message.data.get("Application")
 
-        self.log.info('Killing {}'.format(app_name))
-        if subprocess.call(['killall', '-9', app_name]):
-            # Couldn't be killed try to get executable from desktop file
+        if not self.kill_process_by_name(app_name):
+            self.log.info(
+                "Couldn't kill {} try to get executable from desktop file".format(
+                    app_name
+                )
+            )
             apps = self.appmap.get(app_name)
-            # Try to find executable name
             if apps:
-                app_name = apps[0].get_string('Exec')
-                subprocess.call(['killall', '-9', app_name])
+                app_name = apps[0].get_string("Exec")
+                if not self.kill_process_by_name(app_name):
+                    self.speak("failed to close {}".format(app_name))
+
+    def kill_process_by_name(self, app_name):
+        """Kill a process using the least powerful signal that works."""
+        self.log.info("Killing {}".format(app_name))
+        for signal in ["SIGINT", "SIGQUIT", "SIGTERM", "SIGKILL"]:
+            if subprocess.call(["killall", "-s", signal, app_name]) == 0:
+                self.log.info("Killed {} using {}".format(app_name, signal))
+                return True
+
+        return False
 
     @intent_handler(IntentBuilder('LaunchWebsiteIntent')
                     .require('LaunchKeyword').require('Website'))
