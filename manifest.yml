@@ -3,4 +3,6 @@ dependencies:
   python:
     - pygobject
   system:
-    apt-get: libcairo-dev
+    apt-get:
+      - libcairo-dev
+      - libgirepository1.0-dev
